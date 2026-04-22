@@ -55,11 +55,9 @@ public class TicTacToeServiceImpl implements TicTacToeService {
                 if (newVal == 1) updatedX++;
                 if (newVal == 2) updatedO++;
 
-                // Нельзя менять уже занятые клетки
                 if (oldVal != 0 && oldVal != newVal) return false;
             }
         }
-        // Игрок должен добавить ровно один X и не трогать O
         return (updatedX == originalX + 1) && (updatedO == originalO);
     }
 
