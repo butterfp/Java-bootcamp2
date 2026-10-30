@@ -3,6 +3,8 @@ package security;
 import domain.service.AuthService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -45,6 +47,10 @@ public class AuthFilter extends GenericFilterBean {
     /**
      * Основная логика фильтра.
      *
+     * Сигнатура соответствует методу Filter.doFilter(ServletRequest, ServletResponse, FilterChain):
+     * именно её требует интерфейс javax/jakarta.servlet.Filter, поэтому параметры объявлены
+     * как ServletRequest/ServletResponse, а внутри приводятся к HTTP-вариантам.
+     *
      * Шаги:
      * 1. достаём заголовок Authorization;
      * 2. просим AuthService проверить пару логин/пароль (signIn вернёт UUID);
@@ -52,9 +58,15 @@ public class AuthFilter extends GenericFilterBean {
      * 4. любая ошибка (нет заголовка, битый base64, неверный пароль) -> 401, запрос не выполняется.
      */
     @Override
-    public void doFilter(HttpServletRequest request,
-                         HttpServletResponse response,
+    public void doFilter(ServletRequest servletRequest,
+                         ServletResponse servletResponse,
                          FilterChain filterChain) throws IOException, ServletException {
+
+        // Фильтр работает только с HTTP-запросами: приводим типы и проверяем их
+        if (!(servletRequest instanceof HttpServletRequest request)
+                || !(servletResponse instanceof HttpServletResponse response)) {
+            throw new ServletException("AuthFilter поддерживает только HTTP-запросы");
+        }
 
         String authorizationHeader = request.getHeader("Authorization");
 

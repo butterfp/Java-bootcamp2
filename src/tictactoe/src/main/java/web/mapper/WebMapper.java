@@ -8,6 +8,8 @@ import web.model.GameResponseDTO;
 import web.model.PlayerInfoDTO;
 import web.model.UserInfoDTO;
 
+import java.util.UUID;
+
 /**
  * Файл: web/mapper/WebMapper.java
  *
