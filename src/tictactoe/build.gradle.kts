@@ -1,9 +1,15 @@
-//ЕСЛИ ЧТО ВДРУГ НАДО ОЬНОВИТЬ Gradle, иначе IDEA не найдет Jwts.builder()!!!
+// Файл: build.gradle.kts — сборочный скрипт backend-проекта (Gradle, Kotlin DSL).
+// Здесь объявлены только те зависимости, которые нужны трём заданиям курса:
+//   задание 1 — PostgreSQL + Spring Data JPA;
+//   задание 2 — Spring Security (PasswordEncoder/SecurityFilterChain);
+//   веб-слой  — Spring MVC (REST-контроллеры).
+// Сторонние библиотеки сверх списка задания (JWT и т.п.) удалены: авторизация
+// сделана на Basic-заголовке base64(login:password) и собственном AuthFilter.
 
 plugins {
-    id("java")
-    id("org.springframework.boot") version "4.0.5"
-    id("io.spring.dependency-management") version "1.1.7"
+    id("java")                                        // компиляция Java-кода
+    id("org.springframework.boot") version "3.3.4"     // плагин сборки executable jar/war
+    id("io.spring.dependency-management") version "1.1.6" // подбор версий зависимостей Spring Boot
 }
 
 group = "org.example"
@@ -14,28 +20,30 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-webmvc")
-    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    // Веб-слой: REST-контроллеры, встроенный Tomcat, Jackson для JSON
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    // Задание 1: Spring Data JPA (Hibernate + CrudRepository) — доступ к PostgreSQL
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    // Задание 2: Spring Security — SecurityFilterChain, PasswordEncoder (BCrypt)
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    // Драйвер PostgreSQL (нужен только во время выполнения, поэтому runtimeOnly)
+    runtimeOnly("org.postgresql:postgresql")
 
+    // Тесты
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    // Spring Data JPA
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-
-    // Драйвер PostgreSQL
-    runtimeOnly("org.postgresql:postgresql")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
-
-    // (опционально) для миграций БД
-    // implementation("org.liquibase:liquibase-core")
-    // или
-    // implementation("org.flywaydb:flyway-core")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
+// Запуск тестов через платформу JUnit 5
 tasks.test {
     useJUnitPlatform()
+}
+
+// Java-версия исходников и байт-кода (в проекте используются record и switch-выражения)
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
 }
