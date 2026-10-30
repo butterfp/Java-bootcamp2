@@ -9,32 +9,49 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 @Service
+private final GameRepository gameRepository;
+private final GameMapper gameMapper;
+
+@Service
 public class TicTacToeServiceImpl implements TicTacToeService {
-
     private final GameRepository gameRepository;
+    private final GameMapper gameMapper;
 
-    public TicTacToeServiceImpl(GameRepository gameRepository) {
+    public TicTacToeServiceImpl(GameRepository gameRepository, GameMapper gameMapper) {
         this.gameRepository = gameRepository;
+        this.gameMapper = gameMapper;
     }
 
+   // Теперь мы создаем GameSession, переводим её в GameEntity
+   // через маппер и только потом сохраняем в базу
     @Override
     public GameSession createGame() {
         GameSession newGame = new GameSession(UUID.randomUUID(), new GameBoard());
-        gameRepository.save(newGame);
+        gameRepository.save(gameMapper.toEntity(newGame)); //было gameRepository.save(newGame);
         return newGame;
     }
 
+    //Теперь репозиторий возвращает GameEntity (обернутый в Optional),
+    // поэтому нам нужно достать его и сразу превратить обратно
+    // в доменный GameSession с помощью маппера:
     @Override
     public GameSession getGameById(UUID id) {
-        return gameRepository.findById(id)
+        GameEntity entity = gameRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Игра с ID " + id + " не найдена!"));
+        // Конвертируем из Entity обратно в Domain перед возвратом
+        return gameMapper.toDomain(entity);
+        // было return gameRepository.findById(id)
+        //.orElseThrow(() -> new RuntimeException("Игра с ID " + id + " не найдена!"));
     }
 
+    //Здесь мы тоже сохраняем обновленную сессию через маппер
     @Override
     public void updateBoard(UUID id, GameBoard board) {
         GameSession session = getGameById(id);
         GameSession updatedSession = new GameSession(session.id(), board);
-        gameRepository.save(updatedSession);
+        // Конвертируем в Entity и сохраняем
+        gameRepository.save(gameMapper.toEntity(updatedSession));
+        //gameRepository.save(updatedSession);
     }
 
     @Override

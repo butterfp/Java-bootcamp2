@@ -1,3 +1,11 @@
+//Зависимости (gameService и webMapper) — точно так же, как в сервисе, контроллер не создает их сам.
+// Спринг приносит их готовыми через конструктор и складывает в this.
+//
+//@PostMapping — обрабатывает запросы от пользователя (нажатие кнопки «Начать игру» или отправка хода).
+//
+//@PathVariable UUID id и @RequestBody — вытаскивают данные из самого HTTP-запроса
+// ( ID игры из адресной строки и объект с ходом игрока из тела запроса).
+
 package web.controller;
 
 import domain.model.GameSession;
@@ -10,8 +18,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@RestController
-@RequestMapping("/game")
+@RestController // это аннотации,
+@RequestMapping("/game") //которые говорят Спрингу:
+// «Этот класс будет принимать входящие веб-запросы по адресу /game».
 public class GameController {
 
     private final TicTacToeService gameService;
